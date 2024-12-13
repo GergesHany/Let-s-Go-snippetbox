@@ -3,6 +3,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+   "bytes"
 )
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
@@ -35,11 +36,17 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
       return
    }
 
-   w.WriteHeader(status)
-
-   err := ts.ExecuteTemplate(w, "base", data)
+   // Initialize a new buffer.
+   buf := new(bytes.Buffer)
+   
+   // Write the template to the buffer instead of directly to the http.ResponseWriter.
+   err := ts.ExecuteTemplate(buf, "base", data)
    if err != nil {
       app.serverError(w, err)
+      return
    }
+   
+   w.WriteHeader(status)
+   buf.WriteTo(w) // Write the contents of the buffer to the http.ResponseWriter.
 
 }
