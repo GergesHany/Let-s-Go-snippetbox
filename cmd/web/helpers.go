@@ -5,6 +5,9 @@ import (
 	"runtime/debug"
    "bytes"
    "time"
+   "errors"
+
+   "github.com/go-playground/form/v4" 
 )
 
 func (app *application) newTemplateData(r *http.Request) *templateData {
@@ -13,6 +16,30 @@ func (app *application) newTemplateData(r *http.Request) *templateData {
    }
 }
 
+func (app *application) decodePostForm(r *http.Request, dst any) error {
+   
+   // dst: destination struct
+
+   err := r.ParseForm()
+   if err != nil {
+      return err
+   }
+   
+   // Use the decoder to decode the form data into the struct.
+   err = app.formDecoder.Decode(dst, r.PostForm)
+
+   if err != nil {
+      var invalidDecoderError *form.InvalidDecoderError
+
+      // error.As() is used to check if the error returned by Decode is an InvalidDecoderError.
+      if errors.As(err, &invalidDecoderError) {
+         panic(err) // This will be caught by the serverError helper.
+      }
+      return err
+   }
+   
+   return nil
+}
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
     
