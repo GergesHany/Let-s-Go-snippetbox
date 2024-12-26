@@ -88,26 +88,3 @@ func (m *SnippetModel) Latest() ([]*Snippet, error) {
 
 	return snippets, nil
 }
-
-// func (m *ExampleModel) ExampleTransaction() error {
-// 	tx, err := m.DB.Begin()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	defer tx.Rollback() // This will be ignored if the tx is committed first
-
-// 	_, err = tx.Exec("INSERT INTO ...")
-// 	if err != nil {
-// 	   return err
-// 	}
-
-// 	// Carry out another transaction in exactly the same way.
-// 	_, err = tx.Exec("UPDATE ...")
-// 	if err != nil {
-// 	  return err
-// 	}
-
-// 	err = tx.Commit()
-// 	return err;
-// }
