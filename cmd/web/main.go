@@ -26,6 +26,7 @@ type application struct {
 	infoLog *log.Logger
 
 	snippets *models.SnippetModel
+	users    *models.UserModel
 	templateCache map[string]*template.Template
 
 	formDecoder *form.Decoder
@@ -40,7 +41,7 @@ func main()  {
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Llongfile)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	db, err := openDB(*dsn)
 	if err != nil {
@@ -56,7 +57,11 @@ func main()  {
 
 	formDecoder := form.NewDecoder()
 
-	sessionManager := scs.New() // Create a new session manager 
+	sessionManager := scs.New() // Create a new session manager
+
+	// "Strict" mode is blocking third-party cookies and cookies that don't have a SameSite attribute 
+	// sessionManager.Cookie.SameSite = http.SameSiteStrictMode 
+	
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
 
@@ -64,6 +69,7 @@ func main()  {
 		errorLog: errorLog,
 		infoLog: infoLog,
 		snippets: &models.SnippetModel{DB: db},
+		users: &models.UserModel{DB: db},
 		templateCache: templateCache,
 		formDecoder: formDecoder,
 		sessionManager: sessionManager,
@@ -76,7 +82,7 @@ func main()  {
 	srv := &http.Server{
 		Addr: *addr,
 		MaxHeaderBytes: 524288,
-		
+
 		ErrorLog: errorLog,
 		Handler: app.routes(),
 		TLSConfig: tlsConfig,
