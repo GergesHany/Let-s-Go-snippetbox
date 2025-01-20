@@ -49,11 +49,11 @@ func MaxChars(value string, n int) bool {
   return utf8.RuneCountInString(value) <= n 
 } 
 
-func PermittedInt(value int, permittedValues ...int) bool {
+func PermittedValue[T compatible](value T, T permittedValues ...){
   for _, v := range permittedValues {
-	if v == value {
-		return true
-	}
+    if v == value {
+      return true
+    }
   }
   return false
 }

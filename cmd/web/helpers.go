@@ -12,8 +12,13 @@ import (
 )
 
 func (app *application) isAuthenticated(r *http.Request) bool {
-   return app.sessionManager.Exists(r.Context(), "authenticatedUserID")
+   isAuthenticated, ok := r.Context().Value(isAuthenticatedContextKey).(bool)
+   // If the isAuthenticatedContextKey key does not exist in the request context
+   if !ok {
+     return false
    }
+   return isAuthenticated
+}
 
 func (app *application) newTemplateData(r *http.Request) *templateData {
    return &templateData{
@@ -91,5 +96,4 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
    
    w.WriteHeader(status)
    buf.WriteTo(w) // Write the contents of the buffer to the http.ResponseWriter.
-
 }

@@ -1,10 +1,38 @@
 package main 
 
 import (
+    "context"
 	"net/http"
 	"fmt"
 	"github.com/justinas/nosurf"
 )
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	  // "authenticatedUserID" value is in the session
+	  id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+      if id == 0 {
+		  next.ServeHTTP(w, r)
+		  return
+	  }
+
+	  // check if the user exists
+	  exists, err := app.users.Exists(id)
+	  if err != nil {
+		  app.serverError(w, err)
+		  return
+	  }
+
+      // If the user exists, add it to the request context
+	  if exists {
+		ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)
+		r = r.WithContext(ctx)
+	  } 
+
+	  next.ServeHTTP(w, r)
+   })
+}
 
 func noSurf(next http.Handler) http.Handler {
 	// Create a new CSRF handler using nosurf, passing in the next handler in the chain

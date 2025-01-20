@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"snippetbox.alexedwards.net/ui"
     "github.com/justinas/alice"
 	"github.com/julienschmidt/httprouter"
 )
@@ -14,12 +15,11 @@ func (app *application) routes() http.Handler {
 		app.notFound(w)
 	})
 
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	router.Handler(http.MethodGet, "/static/*filepath",
-	http.StripPrefix("/static", fileServer))
+	fileServer := http.FileServer(http.FS(ui.Files)) 
+	router.Handler(http.MethodGet, "/static/*filepath", fileServer)
 
 	// Use the nosurf middleware on all our 'dynamic' routes.
-    dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
+    dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
 	// Unprotected application
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
