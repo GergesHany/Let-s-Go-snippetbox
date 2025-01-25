@@ -35,6 +35,10 @@ type userLoginForm struct {
    validator.Validator `form:"-"`
 }
 
+func ping(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("OK"))
+}
+
 func (app *application) home(w http.ResponseWriter, r *http.Request){
 	snippets, err := app.snippets.Latest()
 	if err != nil {
@@ -48,12 +52,26 @@ func (app *application) home(w http.ResponseWriter, r *http.Request){
 	app.render(w, http.StatusOK, "home.tmpl.html", data)
 }
 
+func IsNumeric(s string) bool {
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func IsInt(s string) bool {
+	_, err := strconv.Atoi(s)
+	return err == nil
+}
+
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	
    params := httprouter.ParamsFromContext(r.Context());
 
    id, err := strconv.Atoi(params.ByName("id"))
-   if err != nil || id < 1 {
+   if err != nil || id < 1 || !IsNumeric(params.ByName("id")) || !IsInt(params.ByName("id")) {
 	  app.notFound(w)
 	  return
    }
@@ -96,7 +114,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
 	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long")
 	form.CheckField(validator.NotBlank(form.Content), "content", "This field cannot be blank")
-	form.CheckField(validator.PermittedValue(form.Expires, [1, 7, 365]int), "expires", "This field must equal 1, 7 or 365")
+	form.CheckField(validator.PermittedValue(form.Expires, 1, 7, 365), "expires", "This field must equal 1, 7 or 365")
 
 
 	// If there are any errors, redisplay the form.
@@ -126,6 +144,7 @@ func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
 	data.Form = userSignupForm{}
 	app.render(w, http.StatusOK, "signup.tmpl.html", data)
 }
+
 
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
    

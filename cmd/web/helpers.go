@@ -20,12 +20,16 @@ func (app *application) isAuthenticated(r *http.Request) bool {
    return isAuthenticated
 }
 
+
 func (app *application) newTemplateData(r *http.Request) *templateData {
+   csrfToken := nosurf.Token(r)
+   app.infoLog.Printf("CSRF Token: %s", csrfToken) // Log the CSRF token
+
    return &templateData{
-      CurrentYear: time.Now().Year(),
-      Flash: app.sessionManager.PopString(r.Context(), "flash"),
+      CurrentYear:     time.Now().Year(),
+      Flash:           app.sessionManager.PopString(r.Context(), "flash"),
       IsAuthenticated: app.isAuthenticated(r),
-      CSRFToken: nosurf.Token(r), // Add the CSRF token to the template data.
+      CSRFToken:       csrfToken, // Add the CSRF token to the template data.
    }
 }
 

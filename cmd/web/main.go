@@ -15,7 +15,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 
 
-	"github.com/go-playground/form/v4" // New import
+	"github.com/go-playground/form/v4" 
 	_ "github.com/go-sql-driver/mysql" // sql driver(mysql)
 
 	"html/template"
@@ -25,8 +25,8 @@ type application struct {
 	errorLog *log.Logger
 	infoLog *log.Logger
 
-	snippets *models.SnippetModel
-	users    *models.UserModel
+	snippets models.SnippetModelInterface
+	users    models.UserModelInterface
 	templateCache map[string]*template.Template
 
 	formDecoder *form.Decoder

@@ -10,8 +10,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Define a new User type 
+type UserModelInterface interface {
+	Insert(name, email, password string) error
+	Authenticate(email, password string) (int, error)
+	Exists(id int) (bool, error)
+}
 
+// Define a new User type 
 type User struct {
 	ID int 
 	Name string
@@ -25,7 +30,12 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-func (m *UserModel) Insert(name, email, password string) error{
+func (m *UserModel) Insert(name, email, password string) error {
+
+    if name == "" || email == "" || password == "" || len(password) < 8 {
+		return errors.New("Empty name, Empty email, Empty password, Short password")
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		return err
@@ -39,7 +49,7 @@ func (m *UserModel) Insert(name, email, password string) error{
 		// If this error is a MySQL error, we can check if it's a duplicate entry error
 		if errors.As(err, &mySQLError) {
 			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "users_uc_email") {
-				return ErrDuplicateEmail
+				return ErrDuplicateEmail 
 			}
 		}
 		return err 
