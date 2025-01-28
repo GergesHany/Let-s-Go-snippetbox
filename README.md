@@ -2,7 +2,7 @@
 
 Snippetbox share the same concept of [GitHub Gist](https://gist.github.com/) where people can share snippets of text.
 
-# Key Takeaways
+# Key Features
 
 - HTML Templating
 - RESTful Routing
