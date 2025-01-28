@@ -23,7 +23,7 @@ func (app *application) isAuthenticated(r *http.Request) bool {
 
 func (app *application) newTemplateData(r *http.Request) *templateData {
    csrfToken := nosurf.Token(r)
-   app.infoLog.Printf("CSRF Token: %s", csrfToken) // Log the CSRF token
+   // app.infoLog.Printf("CSRF Token: %s", csrfToken) // Log the CSRF token
 
    return &templateData{
       CurrentYear:     time.Now().Year(),
@@ -59,7 +59,6 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 }
 
 func (app *application) serverError(w http.ResponseWriter, err error) {
-    
    // A stack trace is a report of the active stack frames at 
    // a certain point in time during the execution of a program.
    trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack()) 
@@ -68,6 +67,13 @@ func (app *application) serverError(w http.ResponseWriter, err error) {
    // to the log file. The first argument is the log level, which is set to 2 to indicate that this 
    // message should be written as an error message. The second argument is the message to write.
    app.errorLog.Output(2, trace) 
+
+
+   if app.debug {
+      http.Error(w, trace, http.StatusInternalServerError)
+      return
+   }
+
    http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
