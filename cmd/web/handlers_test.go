@@ -2,15 +2,15 @@ package main
 
 import (
 	"net/http"
-	"testing"
 	"net/url"
 	"snippetbox.alexedwards.net/internal/assert"
+	"testing"
 )
 
 func TestPing(t *testing.T) {
 	t.Parallel()
 	app := newTestApplication(t)
-	
+
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
@@ -20,16 +20,15 @@ func TestPing(t *testing.T) {
 	assert.Equal(t, body, "OK")
 }
 
-
 func TestSnippetView(t *testing.T) {
 	app := newTestApplication(t)
-	
+
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
 	tests := []struct {
-		name string
-		urlPath string
+		name     string
+		urlPath  string
 		wantCode int
 		wantBody string
 	}{
@@ -46,10 +45,10 @@ func TestSnippetView(t *testing.T) {
 			code, _, body := ts.get(t, tt.urlPath)
 			assert.Equal(t, code, tt.wantCode)
 			if tt.wantBody != "" {
-			  assert.StringContains(t, body, tt.wantBody)
+				assert.StringContains(t, body, tt.wantBody)
 			}
 		})
-	} 
+	}
 
 }
 
@@ -175,26 +174,25 @@ func TestSnippetCreate(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
-    
+
 	t.Run("Unauthenticated", func(t *testing.T) {
 		code, headers, _ := ts.get(t, "/snippet/create")
 		assert.Equal(t, code, http.StatusSeeOther)
 		assert.Equal(t, headers.Get("Location"), "/user/login")
 	})
 
-
 	t.Run("authenticated", func(t *testing.T) {
 		// login
 		_, _, body := ts.get(t, "/user/login")
 		csrfToken := extractCSRFToken(t, body)
-        
-		// form 
+
+		// form
 		form := url.Values{}
 		form.Add("email", "alice@example.com")
 		form.Add("password", "pa$$word")
 		form.Add("csrf_token", csrfToken)
 		ts.postForm(t, "/user/login", form)
-        
+
 		// create snippet
 		code, _, body := ts.get(t, "/snippet/create")
 		assert.Equal(t, code, http.StatusOK)

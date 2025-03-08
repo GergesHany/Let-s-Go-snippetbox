@@ -1,23 +1,23 @@
 package main
 
 import (
-	"html/template"  
+	"html/template"
 	"io/fs" // used to embed the static files
-	"path/filepath" 
+	"path/filepath"
 	"snippetbox.alexedwards.net/internal/models"
 	"snippetbox.alexedwards.net/ui"
 	"time"
 )
 
 type templateData struct {
-   CurrentYear  int
-   Snippet      *models.Snippet
-   Snippets     []*models.Snippet
-   Form         any
-   Flash        string
-   IsAuthenticated bool
-   CSRFToken string
-   User *models.User
+	CurrentYear     int
+	Snippet         *models.Snippet
+	Snippets        []*models.Snippet
+	Form            any
+	Flash           string
+	IsAuthenticated bool
+	CSRFToken       string
+	User            *models.User
 }
 
 func humanDate(t time.Time) string {
@@ -39,17 +39,15 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		return nil, err
 	}
 
-    for _, page := range pages {
+	for _, page := range pages {
 		name := filepath.Base(page) // Extract the file name (like 'home.page.tmpl.html')
 
-
 		// a slice containing the filepath patterns
-        patterns := []string{
+		patterns := []string{
 			"html/base.tmpl.html",
 			"html/partials/*.tmpl.html",
 			page,
 		}
-
 
 		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 
@@ -57,8 +55,8 @@ func newTemplateCache() (map[string]*template.Template, error) {
 			return nil, err
 		}
 
-		cache[name] = ts; 
+		cache[name] = ts
 	}
-    
+
 	return cache, nil
 }

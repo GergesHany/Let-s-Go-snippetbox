@@ -1,4 +1,5 @@
 package main
 
-type contextKey string 
+type contextKey string
+
 const isAuthenticatedContextKey = contextKey("isAuthenticated")

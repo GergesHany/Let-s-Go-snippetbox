@@ -1,13 +1,13 @@
 package mocks
 
 import (
-	"time"
 	"snippetbox.alexedwards.net/internal/models"
+	"time"
 )
 
-var mockSnippet = &models.Snippet {
-	ID: 1,
-	Title: "An old silent pond",
+var mockSnippet = &models.Snippet{
+	ID:      1,
+	Title:   "An old silent pond",
 	Content: "An old silent pond...",
 	Created: time.Now(),
 	Expires: time.Now(),

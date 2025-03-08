@@ -1,37 +1,37 @@
-package main 
+package main
 
 import (
-    "context"
-	"net/http"
+	"context"
 	"fmt"
 	"github.com/justinas/nosurf"
+	"net/http"
 )
 
 func (app *application) authenticate(next http.Handler) http.Handler {
-   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-	  // "authenticatedUserID" value is in the session
-	  id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
-      if id == 0 {
-		  next.ServeHTTP(w, r)
-		  return
-	  }
+		// "authenticatedUserID" value is in the session
+		id := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+		if id == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
 
-	  // check if the user exists
-	  exists, err := app.users.Exists(id)
-	  if err != nil {
-		  app.serverError(w, err)
-		  return
-	  }
+		// check if the user exists
+		exists, err := app.users.Exists(id)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
 
-      // If the user exists, add it to the request context
-	  if exists {
-		ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)
-		r = r.WithContext(ctx)
-	  } 
+		// If the user exists, add it to the request context
+		if exists {
+			ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)
+			r = r.WithContext(ctx)
+		}
 
-	  next.ServeHTTP(w, r)
-   })
+		next.ServeHTTP(w, r)
+	})
 }
 
 func noSurf(next http.Handler) http.Handler {
@@ -41,9 +41,9 @@ func noSurf(next http.Handler) http.Handler {
 	// Set the Secure flag on the CSRF cookie
 	csrfHandler.SetBaseCookie(http.Cookie{
 		HttpOnly: true,
-		Path: "/",
-		Secure: true,
-    })
+		Path:     "/",
+		Secure:   true,
+	})
 	return csrfHandler
 }
 
@@ -52,15 +52,15 @@ func noSurf(next http.Handler) http.Handler {
 
 func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		
-		w.Header().Set("Content-Security-Policy", 
-		               "default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
 
-        w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
+		w.Header().Set("Content-Security-Policy",
+			"default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
+
+		w.Header().Set("Referrer-Policy", "origin-when-cross-origin")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "deny")
 		w.Header().Set("X-XSS-Protection", "0")
-	
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -75,7 +75,7 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 }
 
 // recoverPanic ↔ logRequest ↔ secureHeaders ↔ servemux ↔ application handler
-func (app * application) recoverPanic(next http.Handler) http.Handler {
+func (app *application) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -95,7 +95,7 @@ func (app *application) requireAuthentication(next http.Handler) http.Handler {
 			return
 		}
 		// "Cache-Control: no-store" header so that pages
-        // require authentication are not stored in the users browser cache 
+		// require authentication are not stored in the users browser cache
 		w.Header().Add("Cache-Control", "no-store")
 		next.ServeHTTP(w, r)
 	})
